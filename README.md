@@ -24,7 +24,8 @@
    - [Cross-Terminal Worker Stop](#8-cross-terminal-worker-stop)
    - [FastAPI Web Dashboard](#9-fastapi-web-dashboard)
 5. [Automated Showcase & Crash Recovery Scripts](#-automated-showcase--crash-recovery-scripts)
-6. [Running the Test Suite](#-running-the-test-suite)
+6. [Deploying to Render](#-deploying-to-render)
+7. [Running the Test Suite](#-running-the-test-suite)
 7. [System Architecture & File Structure](#-system-architecture--file-structure)
 8. [Documentation Links](#-documentation-links)
 
@@ -254,6 +255,50 @@ Simulates a `SIGKILL` (`kill -9`) worker process crash to prove automatic job re
 ```bash
 python scripts/simulate_crash.py
 ```
+
+---
+
+## ☁️ Deploying to Render
+
+QueueCTL comes with a pre-configured `render.yaml` Blueprint file for 1-click deployment on **[Render.com](https://render.com/)**.
+
+### Method 1: Deploy with Render Blueprint (Recommended)
+
+1. Push your code to your GitHub repository ([`https://github.com/fang1177/QueueCTL`](https://github.com/fang1177/QueueCTL)).
+2. Log into **[Render Dashboard](https://dashboard.render.com/)**.
+3. Click **New +** -> **Blueprint**.
+4. Connect your GitHub repository (`QueueCTL`).
+5. Render will automatically detect `render.yaml` and create two services:
+   - **`queuectl-dashboard`** (Web Service listening on port `$PORT` with persistent storage at `/var/data/queuectl.db`).
+   - **`queuectl-worker`** (Background Worker processing jobs continuously).
+6. Click **Apply**. Render will build and launch both services automatically!
+
+---
+
+### Method 2: Manual Web Service Setup on Render
+
+If you prefer setting up services manually on Render UI:
+
+#### 1. Create Web Service (FastAPI Dashboard):
+- **Name**: `queuectl-dashboard`
+- **Environment**: `Python`
+- **Build Command**: `pip install -e .`
+- **Start Command**: `queuectl init && queuectl dashboard --host 0.0.0.0`
+- **Environment Variables**:
+  - `QUEUECTL_DB_PATH` = `/var/data/queuectl.db`
+  - `PYTHONUNBUFFERED` = `1`
+- **Disk**: Mount persistent disk at `/var/data` (Size: 1 GB).
+
+#### 2. Create Background Worker Service:
+- **Name**: `queuectl-worker`
+- **Service Type**: `Background Worker`
+- **Environment**: `Python`
+- **Build Command**: `pip install -e .`
+- **Start Command**: `queuectl worker start`
+- **Environment Variables**:
+  - `QUEUECTL_DB_PATH` = `/var/data/queuectl.db`
+  - `PYTHONUNBUFFERED` = `1`
+- **Disk**: Mount the same persistent disk at `/var/data`.
 
 ---
 

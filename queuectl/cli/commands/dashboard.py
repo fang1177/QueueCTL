@@ -18,8 +18,15 @@ def dashboard_command(
 ):
     """Launches the minimal FastAPI web dashboard for real-time monitoring."""
     try:
-        settings = get_settings(db_path)
         import os
+        # Support cloud environment variables (e.g. Render, Heroku)
+        env_port = os.getenv("PORT")
+        if env_port and port == 8000:
+            port = int(env_port)
+        if env_port and host == "127.0.0.1":
+            host = "0.0.0.0"
+
+        settings = get_settings(db_path)
         os.environ["QUEUECTL_DB_PATH"] = settings.db_path
 
         print(f"Starting QueueCTL Live Dashboard on http://{host}:{port}")
