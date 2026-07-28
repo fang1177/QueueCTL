@@ -6,33 +6,10 @@ services:
     name: queuectl-dashboard
     env: python
     buildCommand: "pip install -e ."
-    startCommand: "queuectl init && queuectl dashboard --host 0.0.0.0"
+    startCommand: "queuectl init --db-path /tmp/queuectl.db && queuectl dashboard --host 0.0.0.0 --db-path /tmp/queuectl.db"
     plan: free
-    disk:
-      name: queuectl-db-storage
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: QUEUECTL_DB_PATH
-        value: /var/data/queuectl.db
-      - key: PYTHONUNBUFFERED
-        value: "1"
-
-  # ------------------------------------------------------------------
-  # 2. QueueCTL Background Worker Process
-  # ------------------------------------------------------------------
-  - type: worker
-    name: queuectl-worker
-    env: python
-    buildCommand: "pip install -e ."
-    startCommand: "queuectl worker start"
-    plan: free
-    disk:
-      name: queuectl-db-storage
-      mountPath: /var/data
-      sizeGB: 1
-    envVars:
-      - key: QUEUECTL_DB_PATH
-        value: /var/data/queuectl.db
+        value: /tmp/queuectl.db
       - key: PYTHONUNBUFFERED
         value: "1"
